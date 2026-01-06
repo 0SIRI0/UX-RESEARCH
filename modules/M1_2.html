@@ -1,12 +1,416 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>M1.2 Cross-language Dead-end</title>
+  <meta charset="utf-8" />
+  <title>Module M1.2 – Chinese/English search switching failure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    :root {
+      --red-main: #c00000;
+      --red-light: #ffe5e5;
+      --red-soft: #ffefef;
+      --text-main: #333333;
+      --text-muted: #666666;
+      --border-soft: #f0c7c7;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: #ffffff;
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 16px 48px;
+    }
+
+    /* 顶部导航与标题 */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .back-link {
+      font-size: 14px;
+      color: var(--red-main);
+      text-decoration: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      background: var(--red-soft);
+      border: 1px solid var(--border-soft);
+    }
+
+    .back-link:hover {
+      background: var(--red-light);
+    }
+
+    .project-tag {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    h1 {
+      font-size: 26px;
+      color: var(--red-main);
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* 模块概要卡片 */
+    .summary-card {
+      background: var(--red-soft);
+      border-radius: 16px;
+      border: 1px solid var(--border-soft);
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px 24px;
+      margin-bottom: 28px;
+    }
+
+    .summary-item-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .summary-item-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .summary-item-value.code {
+      font-family: "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+      font-size: 14px;
+    }
+
+    /* 分段标题 */
+    .section-title {
+      font-size: 18px;
+      margin-top: 24px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .section-title span.en {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .section-title span.cn {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    /* participant 卡片列表 */
+    .participant-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .participant-card {
+      border-radius: 14px;
+      border: 1px solid #f1f1f1;
+      padding: 12px 14px 10px;
+      background: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    }
+
+    .participant-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .participant-id {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--red-main);
+    }
+
+    .participant-id span.label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+
+    .module-badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: var(--red-soft);
+      color: var(--red-main);
+      font-family: "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+    }
+
+    .cause-tag {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .evidence-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 1px;
+    }
+
+    .evidence-text {
+      font-size: 14px;
+      white-space: pre-line; /* 方便你直接粘访谈原文，保留换行 */
+    }
+
+    /* 页脚 */
+    .footer {
+      margin-top: 32px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-top: 1px solid #f3f3f3;
+      padding-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .page {
+        padding: 20px 12px 32px;
+      }
+      h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
 </head>
 
 <body>
-  <h2>M1.2 Cross-language Dead-end</h2>
-  <p>这里是模块 M1.2 的详细说明页面。</p>
+<div class="page">
+
+  <!-- 顶部返回链接和标题 -->
+  <div class="top-bar">
+    <a class="back-link" href="../index.html">← Back to overview / 返回总览图</a>
+    <div class="project-tag">JSTOR China UX – Module View</div>
+  </div>
+
+  <h1>Module M1.2</h1>
+  <div class="subtitle">
+    Failure caused by the absence of cross-language search support
+  </div>
+
+  <!-- 模块概要信息 -->
+  <section class="summary-card">
+    <div>
+      <div class="summary-item-label">Module ID</div>
+      <div class="summary-item-value code">M1.2</div>
+    </div>
+
+    <div>
+      <div class="summary-item-label">Module Group</div>
+      <div class="summary-item-value">SEARCH</div>
+    </div>
+
+    <div>
+      <div class="summary-item-label">Module Name</div>
+      <div class="summary-item-value">
+        Chinese/English search switching failure
+      </div>
+    </div>
+
+    <div>
+      <div class="summary-item-label">Main Cause Code</div>
+      <div class="summary-item-value code">C1.2 – Chinese search yields nothing</div>
+    </div>
+
+    <div>
+      <div class="summary-item-label">Frequency</div>
+      <div class="summary-item-value">7</div>
+    </div>
+  </section>
+
+  <!-- 参与者证据列表 -->
+  <h2 class="section-title">
+    <span class="en">Participant Evidence</span>
+  </h2>
+  <p class="section-desc">
+    Each card below corresponds to one participant’s specific issue within this module, including their Participant ID,<br/>
+    the associated Cause code, and a summarised description from the interview/observation.
+  </p>
+
+  <section class="participant-list">
+
+    <!-- 复制这个卡片块，为每个参与者填写一次即可 -->
+    <article class="participant-card">
+      <div class="participant-header">
+        <div class="participant-id">
+          <span class="label">Participant</span> P01
+        </div>
+        <div class="module-badge">M1.2</div>
+      </div>
+
+      <div class="cause-tag">
+        <strong>Cause:</strong> C1.2 – Cross-language Dead-end
+      </div>
+
+      <div class="evidence-label">Evidence</div>
+      <div class="evidence-text">
+The user could not search Treaty of Nanking in Chinese, switched to English search.
+      </div>
+    </article>
+
+    <!-- 示例：第二位参与者 -->
+    <article class="participant-card">
+      <div class="participant-header">
+        <div class="participant-id">
+          <span class="label">Participant</span> P03
+        </div>
+        <div class="module-badge">M1.2</div>
+      </div>
+
+      <div class="cause-tag">
+        <strong>Cause:</strong> C1.2 – Cross-language Dead-end
+      </div>
+
+      <div class="evidence-label">Evidence / 证据</div>
+      <div class="evidence-text">
+The user searched for Treaty of Nanking in Chinese yielded no results
+      </div>
+    </article>
+
+     <article class="participant-card">
+      <div class="participant-header">
+        <div class="participant-id">
+          <span class="label">Participant</span> P03
+        </div>
+        <div class="module-badge">M1.2</div>
+      </div>
+
+      <div class="cause-tag">
+        <strong>Cause:</strong> C1.2 – Cross-language Dead-end
+      </div>
+
+      <div class="evidence-label">Evidence / 证据</div>
+      <div class="evidence-text">
+The user wanted to search 'treaty ports' using Chinese but failed
+      </div>
+    </article>
+
+   <article class="participant-card">
+      <div class="participant-header">
+        <div class="participant-id">
+          <span class="label">Participant</span> P04
+        </div>
+        <div class="module-badge">M1.2</div>
+      </div>
+
+      <div class="cause-tag">
+        <strong>Cause:</strong> C1.2 – Cross-language Dead-end
+      </div>
+
+      <div class="evidence-label">Evidence / 证据</div>
+      <div class="evidence-text">
+The user searched 'Nanjing' (in Chinese) at the first time
+      </div>
+    </article>
+
+   <article class="participant-card">
+      <div class="participant-header">
+        <div class="participant-id">
+          <span class="label">Participant</span> P07
+        </div>
+        <div class="module-badge">M1.2</div>
+      </div>
+
+      <div class="cause-tag">
+        <strong>Cause:</strong> C1.2 – Cross-language Dead-end
+      </div>
+
+      <div class="evidence-label">Evidence / 证据</div>
+      <div class="evidence-text">
+The user searched Treaty of Nanking in Chinese, no result
+      </div>
+    </article>
+
+  <article class="participant-card">
+      <div class="participant-header">
+        <div class="participant-id">
+          <span class="label">Participant</span> P08
+        </div>
+        <div class="module-badge">M1.2</div>
+      </div>
+
+      <div class="cause-tag">
+        <strong>Cause:</strong> C1.2 – Cross-language Dead-end
+      </div>
+
+      <div class="evidence-label">Evidence / 证据</div>
+      <div class="evidence-text">
+The user searched Treaty of Nanking in Chinese, no result
+      </div>
+    </article>
+
+  <article class="participant-card">
+      <div class="participant-header">
+        <div class="participant-id">
+          <span class="label">Participant</span> P08
+        </div>
+        <div class="module-badge">M1.2</div>
+      </div>
+
+      <div class="cause-tag">
+        <strong>Cause:</strong> C1.2 – Cross-language Dead-end
+      </div>
+
+      <div class="evidence-label">Evidence / 证据</div>
+      <div class="evidence-text">
+The user thought JSTOR cannot search in Chinese, hopes for multilingual search
+      </div>
+    </article>    
+  </section>
+
+
+
+
+  
+  <footer class="footer">
+    Module detail view · JSTOR China UX Research<br/>
+  </footer>
+
+</div>
 </body>
 </html>
